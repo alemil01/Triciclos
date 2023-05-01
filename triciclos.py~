@@ -1,0 +1,32 @@
+from pyspark import SparkContext
+import sys
+
+
+def get_edges_rep(line):
+    edge = line.strip().split(',')
+    n1 = edge[0]
+    n2 = edge[1]
+    if n1 != n2:
+        return [(n1, n2), (n2, n1)]
+    else:
+        return [(n1, n2)] #n1 == n2
+
+def adjacents(sc, filename):
+    edges = sc.textFile(filename).\
+        flatMap(get_edges_rep).\
+        filter(lambda x: x is not None).\
+        distinct()
+    adj = edges.groupByKey().collect()
+    for node in adj:
+        print(node[0], list(node[1]))
+
+def main(filename):
+    with sparkContext as sc:
+        sc.setLogLevel("ERROR")
+        adyacentes = adjacents(filename)
+
+if __name__ == '__main__':
+    if len(sys.argv) != 2:
+        print("Uso python3 {0} <file>".format(sys.argv[0]))
+    else:
+        main(sys.argv[1])
